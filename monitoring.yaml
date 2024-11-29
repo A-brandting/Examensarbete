@@ -48,16 +48,30 @@
         creates: /usr/local/bin/helm
 
 
+    - name: Add prometheus Helm repository
+      ansible.builtin.command:
+        cmd: "helm repo add prometheus-community https://prometheus-community.github.io/helm-charts"
+      become_user: administrator
 
+    - name: Add Grafana Helm repository
+      ansible.builtin.command:
+        cmd: "helm repo add grafana https://grafana.github.io/helm-charts"
+      become_user: administrator
 
+    - name: Update helm repository
+      ansible.builtin.command:
+        cmd: helm repo update
+      become_user: administrator
 
+    - name: Install prometheus-community/kube-prometheus-stack
+      ansible.builtin.command:
+        cmd: "helm upgrade --install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --set grafana.adminPassword=Linux4Ever"
+      become_user: administrator
 
-#curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    - name: Port-forward in detached mode using async
+      ansible.builtin.command:
+        cmd: kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring
+      become_user: administrator
+      async: 3600  # Time in seconds (1 hour)
+      poll: 0  # Don't wait for the command to finish
 
-#helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-#helm repo add grafana https://grafana.github.io/helm-charts
-#helm repo update
-
-#helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace --set grafana.adminPassword=
-#kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring
-#ssh -L 3000:localhost:3000 user@10.0.2.18
