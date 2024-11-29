@@ -1,0 +1,63 @@
+---
+- name: Install Monitoring
+  hosts: masternodes
+  become: true
+  vars_files:
+    - vault.yaml
+
+  vars: 
+    ansible_become_pass: "{{ become_password }}"
+
+  tasks:
+
+    # Installera Python3 och pip (Behövs för att kunna installera kubernetes-paket)
+    - name: Install Python 3 and pip
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    # Install Kubernetes Python client
+    - name: Install Kubernetes Python client
+      ansible.builtin.pip:
+        name: kubernetes
+        break_system_packages: true
+        state: present
+
+    # Konfigurerar upp namespaces för att segmentera klustret
+    - name: Create namespaces
+      kubernetes.core.k8s:
+        kind: Namespace
+        name: "{{ item }}"
+        kubeconfig: /home/administrator/.kube/config
+      loop:
+        - ts-development
+        - ts-staging
+        - ts-production
+        - monitoring
+    # Laddar ner och installerar Helm (Pakethanterare för kubernetes)
+    - name: Download and install Helm
+      ansible.builtin.shell: |
+        curl -fsSL https://get.helm.sh/helm-v3.10.0-linux-amd64.tar.gz -o helm.tar.gz
+        tar -zxvf helm.tar.gz
+        sudo mv linux-amd64/helm /usr/local/bin/helm
+        rm -rf linux-amd64 helm.tar.gz
+      args:
+        creates: /usr/local/bin/helm
+
+
+
+
+
+
+#curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+#helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#helm repo add grafana https://grafana.github.io/helm-charts
+#helm repo update
+
+#helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace --set grafana.adminPassword=
+#kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring
+#ssh -L 3000:localhost:3000 user@10.0.2.18
