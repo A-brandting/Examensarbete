@@ -1,0 +1,11 @@
+grafana:
+  smtp:
+    enabled: true
+    from_address: "brandtingandreas@gmail.com"
+    from_name: "Grafana Alerts"
+    host: "smtp.gmail.com"
+    port: 587
+    user: "brandtingandreas@gmail.com"
+    password: "harry1234"
+    require_tls: true
+    skip_verify: false
