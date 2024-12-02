@@ -1,0 +1,40 @@
+---
+- name: Configure kubernetes
+  hosts: masternodes
+  become: true 
+
+  vars_files:
+    - vault.yaml # Krypterad lösenordsfil som lagras på Ansible-hosten
+
+  vars:
+    ansible_user: administrator
+    ansible_become_pass: "{{ become_password }}"
+    accounts:
+      - ts-production
+      - ts-staging
+      - ts-development
+      - monitoring
+
+    node_name:
+      - worker-node1
+      - worker-node2
+      - worker-node3
+   
+    kubeconfig: /home/administrator/.kube/config
+  
+  tasks:
+
+    # Konfigurerar upp namespaces monitoring
+    - name: Create namespaces
+      kubernetes.core.k8s:
+        kind: Namespace
+        name: "{{ item }}"
+        kubeconfig: "{{ kubeconfig }}"
+      loop: "{{ accounts }}"
+
+    - name: Label a Kubernetes node
+      ansible.builtin.command:
+        cmd: kubectl label nodes {{ item }} node-role.kubernetes.io/worker= --kubeconfig=/{{ kubeconfig }}
+      loop: "{{ node_name }}"
+      
+      
