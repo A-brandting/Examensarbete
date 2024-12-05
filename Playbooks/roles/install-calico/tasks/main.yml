@@ -1,0 +1,9 @@
+---
+# tasks file for install-calico
+
+# Installerar nätverksplugin till klustret (Calico)
+- name: Install Calico
+  ansible.builtin.command:
+    kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+  become_user: "{{ ansible_user }}"

@@ -1,0 +1,9 @@
+---
+# tasks file for create-kubeconfig-localhost
+
+# Kopierar över Kubeconfig till localhost (För att kubectl ska fungera)
+- name: Fetch kubeconfig from masternode to localhost
+  ansible.builtin.fetch:
+    src: "/etc/kubernetes/admin.conf"
+    dest: "{{ kubeconfig }}"
+    flat: yes

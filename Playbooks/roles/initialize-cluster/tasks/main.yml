@@ -1,0 +1,32 @@
+---
+# tasks file for initialize-cluster
+
+   # Tar ner alla images innan start av klustret
+- name: Pull Kubernetes images
+  ansible.builtin.command:
+    cmd: kubeadm config images pull
+
+# Initierar klustret med IP-range för att match med Calico:s nätverksplugin
+- name: Initialize cluster
+  ansible.builtin.command:
+    cmd: kubeadm init --pod-network-cidr=192.168.0.0/16
+  register: kubeadm_output
+  args:
+    creates: /etc/kubernetes/kubelet.conf
+
+# Skapar Kube directory för användaren
+- name: Create Kube directory
+  ansible.builtin.command:
+    cmd: mkdir -p {{ kubedirectory }}
+    
+# Kopierar över kubelet config från admin.conf
+- name: Copy config to kube directory
+  ansible.builtin.command:
+    cmd: cp -i /etc/kubernetes/admin.conf {{ kubeconfig }}
+  args:
+    creates: "{{ kubeconfig }}"
+    
+# Ändrar rättigheter för configfilen (Gör den åtkomlig för användarkontot)
+- name: Change config permission
+  ansible.builtin.shell: |
+    chown {{ ansible_user }}:{{ ansible_user }} {{ kubeconfig }}

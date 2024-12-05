@@ -1,0 +1,16 @@
+---
+# tasks file for join-cluster
+
+# Kopierar över join token till workernodsen
+- name: Copy join_token to workernodes
+  ansible.builtin.copy:
+    src: /tmp/join_token
+    dest: /tmp/join_token.sh
+    mode: '0755'
+    
+# Ansluter workernodsen till klustret
+- name: Join workers to cluster
+  ansible.builtin.shell:
+    cmd: /tmp/join_token.sh
+  args:
+    creates: /etc/kubernetes/kubelet.conf

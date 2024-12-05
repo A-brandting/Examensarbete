@@ -1,0 +1,28 @@
+---
+# tasks file for install-kubernetes
+
+# Lägger till nyckel för Kubernetes repository
+- name: Download the Kubernetes GPG signing key
+  ansible.builtin.shell: "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+  args:
+    creates: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+    
+  # Lägger till Kubernetes repository
+- name: Add the Kubernetes repository
+  ansible.builtin.shell: "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list"
+  args:
+    creates: /etc/apt/sources.list.d/kubernetes.list
+    
+  # Uppdaterar cachen efter tillägg av repository
+- name: Update apt package index
+  ansible.builtin.apt:
+    update_cache: yes
+    
+  # Installerar verktyg för Kubernetes
+- name: Install Kubernetes packages (kubeadm, kubelet, kubectl)
+  ansible.builtin.apt:
+    name:
+      - kubeadm
+      - kubelet 
+      - kubectl
+    state: present

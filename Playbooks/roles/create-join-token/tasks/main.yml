@@ -1,0 +1,17 @@
+---
+# tasks file for create-join-token
+
+# Skapar en join token för att senare kunna ansluta workernodes
+- name: Create kubeadm token
+  ansible.builtin.command:
+    cmd: kubeadm token create --print-join-command
+  register: join_token
+  args:
+    creates: join_token
+    
+    # Sparar join token temporärt på Ansiblenoden
+- name: Save generated token
+  ansible.builtin.copy:
+    content: "{{ join_token.stdout }}"
+    dest: /tmp/join_token
+  delegate_to: localhost

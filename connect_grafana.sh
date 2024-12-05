@@ -1,5 +1,5 @@
 #! /bin/bash
 
 
-ssh -L 3000:localhost:3000 10.0.2.18
+ssh -L 8080:localhost:8080 10.0.2.18
 

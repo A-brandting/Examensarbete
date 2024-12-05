@@ -69,7 +69,7 @@
         cmd: screen -dmS portforward kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring
       become_user: "{{ ansible_user }}"
       async: 3600  # Time in seconds (1 hour)
-      poll: 0  # Don't wait for the command to finish
+      poll: 5  # Don't wait for the command to finish
 
 - name: Setup SSH localhost
   hosts: localhost
@@ -92,6 +92,7 @@
     - name: Setup SSH connection to Grafana
       ansible.builtin.command:
         cmd: screen -dmS ssh-connection ssh -N -L 3000:localhost:3000 {{ hostvars[groups['masternodes'][0]]['ansible_user'] }}@10.0.2.18
+      become_user: administrator
 
 
 

@@ -131,7 +131,7 @@
         cmd: sysctl --system
 
     # Skapar default configfil för Containerd (Config.toml)
-    - name: Create default kubernetes config
+    - name: Create default containerd config
       ansible.builtin.shell: containerd config default > /etc/containerd/config.toml
     
     # Ändrar värdet på SystemCgroup i configfilen
@@ -259,10 +259,8 @@
         content: "{{ join_token.stdout }}"
         dest: /tmp/join_token
       delegate_to: localhost
-
       
 # PLAY 3: WORKERNODES
-
 - name: Join cluster
   hosts: workernodes
   become: true
@@ -287,3 +285,92 @@
       args:
         creates: /etc/kubernetes/kubelet.conf
 
+# PLAY 4: Install Kubectl on localhost
+- name: Install Kubectl on localhost
+  hosts: localhost
+  become: true
+  vars_files:
+    - vault.yaml
+    
+  vars: 
+    ansible_become_pass: "{{ become_password }}"
+    
+  tasks:
+
+    # Installerar beroenden för kubectl
+    - name: Install required packages (apt-transport-https, ca-certificates, curl, gpg)
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gpg
+          - lsb-release
+          - gnupg
+
+        state: present
+        update_cache: yes
+
+
+      # Lägger till nyckel för Kubernetes repository
+    - name: Download the Kubernetes GPG signing key
+      ansible.builtin.shell: "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+      args:
+        creates: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+    
+    # Lägger till Kubernetes repository
+    - name: Add the Kubernetes repository
+      ansible.builtin.shell: "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list"
+
+    # Uppdaterar cachen efter tillägg av repository
+    - name: Update apt package index
+      ansible.builtin.apt:
+        update_cache: yes
+    
+    # Installerar verktyg för Kubernetes
+    - name: Install kubectl on localhost
+      ansible.builtin.apt:
+        name:
+          - kubectl
+        state: present
+
+    # Installera Python3 och pip (Behövs för att kunna installera kubernetes-paket)
+    - name: Install Python 3 and pip
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    # Installerar Kubernetes Python client
+    - name: Install Kubernetes Python client
+      ansible.builtin.pip:
+        name: kubernetes
+        break_system_packages: true
+        state: present
+    
+    # Ser till att /.kube foldern existerar på localhost
+    - name: Create kube directory
+      ansible.builtin.file:
+        path: /home/administrator/.kube/
+        state: directory
+        mode: '0755'
+    
+
+# PLAY 5: Kopierar över Kubeconfig till Localhost (För att kubectl ska fungera)
+- name: Kopiera kubeconfig från masternoden till localhost
+  hosts: masternodes  
+  become: true
+  vars_files:
+    - vault.yaml
+  vars: 
+    ansible_become_pass: "{{ become_password }}"
+  tasks:
+
+    # Kopierar över Kubeconfig till localhost (För att kubectl ska fungera)
+    - name: Fetch kubeconfig from masternode to localhost
+      ansible.builtin.fetch:
+        src: "/etc/kubernetes/admin.conf"
+        dest: /home/administrator/.kube/config
+        flat: yes

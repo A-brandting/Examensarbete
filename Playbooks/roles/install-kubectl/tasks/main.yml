@@ -1,0 +1,46 @@
+---
+# tasks file for install-kubectl
+
+    # Installerar beroenden för kubectl
+- name: Install required packages (apt-transport-https, ca-certificates, curl, gpg)
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+      - lsb-release
+      - gnupg
+
+    state: present
+    update_cache: yes
+
+
+  # Lägger till nyckel för Kubernetes repository
+- name: Download the Kubernetes GPG signing key
+  ansible.builtin.shell: "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+  args:
+    creates: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+    
+# Lägger till Kubernetes repository
+- name: Add the Kubernetes repository
+  ansible.builtin.shell: "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list"
+
+    # Uppdaterar cachen efter tillägg av repository
+- name: Update apt package index
+  ansible.builtin.apt:
+    update_cache: yes
+    
+# Installerar verktyg för Kubernetes
+- name: Install kubectl on localhost
+  ansible.builtin.apt:
+    name:
+      - kubectl
+    state: present
+
+    # Ser till att /.kube foldern existerar på localhost
+- name: Create kube directory
+  ansible.builtin.file:
+    path: /home/administrator/.kube/
+    state: directory
+    mode: '0755'

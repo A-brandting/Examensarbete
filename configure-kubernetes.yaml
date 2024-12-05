@@ -36,5 +36,69 @@
       ansible.builtin.command:
         cmd: kubectl label nodes {{ item }} node-role.kubernetes.io/worker= --kubeconfig=/{{ kubeconfig }}
       loop: "{{ node_name }}"
-      
-      
+
+    - name: Install Metrics server
+      ansible.builtin.command:
+        cmd: kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+      become_user: "{{ ansible_user }}"
+
+    # Installera Metrics Server
+    - name: Install Metrics server
+      ansible.builtin.shell: |
+        kubectl get deployment metrics-server -n kube-system -o yaml > metrics-server.yaml
+      become_user: "{{ ansible_user }}"
+
+    # FATTAR INTE HUR JAG FICK DETTA ATT FUNGERA
+    - name: Ensure --cert-dir=/tmp is in metrics-server args
+      ansible.builtin.lineinfile:
+        path: metrics-server.yaml
+        regexp: '^\s*- --cert-dir=/tmp'  # Kontrollera om '--cert-dir=/tmp' redan finns
+        line: |  
+                  - --cert-dir=/tmp'  
+                          - --kubelet-insecure-tls
+        insertafter: '^\s*args:'  # Infoga efter args: om den inte finns
+        state: present
+      become_user: "{{ ansible_user }}"
+    
+    # FATTAR INTE HUR JAG FICK DETTA ATT FUNGERA
+    - name: Add --kubelet-insecure-tls to metrics-server args
+      ansible.builtin.lineinfile:
+        path: metrics-server.yaml
+        regexp: '^\s*- --cert-dir=/tmp'  # Matcha raden som börjar med '--cert-dir=/tmp'
+        line: '        - --kubelet-insecure-tls'  # Lägg till det nya argumentet
+        insertafter: '^\s*- --cert-dir=/tmp'  # Infoga efter raden '--cert-dir=/tmp'
+        state: present
+      become_user: "{{ ansible_user }}"
+    
+    # FATTAR INTE HUR JAG FICK DETTA ATT FUNGERA
+    - name: Add --kubelet-insecure-tls to metrics-server args
+      ansible.builtin.lineinfile:
+        path: metrics-server.yaml
+        regexp: '^\s*- --kubelet-insecure-tls'  # Matcha raden som börjar med ett argument i args-listan
+        line: '        - --cert-dir=/tmp'  # Lägg till ett nytt argument
+        state: present
+      become_user: "{{ ansible_user }}"
+
+    # Metrics server för att tillåta autoscaling (Horizontal Pod Autoscaling)
+    - name: Apply metrics-server.yaml
+      ansible.builtin.shell: kubectl apply -f metrics-server.yaml
+      become_user: "{{ ansible_user }}"
+
+    # Installerar Kured för att hanterar säkra omstarter för noderna
+    - name: Install Kured
+      ansible.builtin.shell: |
+        latest=$(curl -s https://api.github.com/repos/kubereboot/kured/releases | jq -r '.[0].tag_name') && kubectl apply -f "https://github.com/kubereboot/kured/releases/download/$latest/kured-$latest-dockerhub.yaml"
+      become_user: "{{ ansible_user }}"
+    # Installerar Linkerd
+    - name: Install Linkerd
+      ansible.builtin.shell: | 
+        curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install-edge | sh && \
+        export PATH=$HOME/.linkerd2/bin:$PATH && \
+        linkerd check --pre && \
+        linkerd install --crds | kubectl apply -f - && \
+        linkerd install | kubectl apply -f -
+      become_user: "{{ ansible_user }}"
+   
+#    - name: Inject Pods Linkered
+#      ansible.builtin.command:
+#        cmd: kubectl get deploy -n  -o yaml | linkerd inject - | kubectl apply -f -
