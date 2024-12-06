@@ -1,2 +1,0 @@
-kubeconfig: "{{ kubedirectory }}/config"
-kubedirectory: "/home/{{ ansible_user }}/.kube"
