@@ -1,0 +1,10 @@
+---
+# tasks file for configure-namespaces
+
+# Konfigurerar upp namespaces monitoring
+- name: Create namespaces
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ item }}" 
+    kubeconfig: "{{ kubeconfig }}" # /home/administrator/.kube/config i mitt fall
+  loop: "{{ namespaces }}" # Definiera namespaces i common.yaml
