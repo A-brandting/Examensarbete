@@ -4,23 +4,10 @@
   become: true 
 
   vars_files:
-    - vault.yaml # Krypterad lösenordsfil som lagras på Ansible-hosten
-
+    - Playbooks/vault.yaml # Krypterad lösenordsfil som lagras på Ansible-hosten
+    - Playbooks/common.yaml
   vars:
-    ansible_user: administrator
     ansible_become_pass: "{{ become_password }}"
-    accounts:
-      - ts-production
-      - ts-staging
-      - ts-development
-      - monitoring
-
-    node_name:
-      - worker-node1
-      - worker-node2
-      - worker-node3
-   
-    kubeconfig: /home/administrator/.kube/config
   
   tasks:
 
@@ -35,7 +22,9 @@
     - name: Label a Kubernetes node
       ansible.builtin.command:
         cmd: kubectl label nodes {{ item }} node-role.kubernetes.io/worker= --kubeconfig=/{{ kubeconfig }}
-      loop: "{{ node_name }}"
+      loop: "{{ groups['workernodes'] }}"  # Eller 'workernodes'
+      ignore_errors: true  # Ignorera fel om noden inte är online
+
 
     - name: Install Metrics server
       ansible.builtin.command:
@@ -89,16 +78,18 @@
       ansible.builtin.shell: |
         latest=$(curl -s https://api.github.com/repos/kubereboot/kured/releases | jq -r '.[0].tag_name') && kubectl apply -f "https://github.com/kubereboot/kured/releases/download/$latest/kured-$latest-dockerhub.yaml"
       become_user: "{{ ansible_user }}"
+    
+    
     # Installerar Linkerd
-    - name: Install Linkerd
-      ansible.builtin.shell: | 
-        curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install-edge | sh && \
-        export PATH=$HOME/.linkerd2/bin:$PATH && \
-        linkerd check --pre && \
-        linkerd install --crds | kubectl apply -f - && \
-        linkerd install | kubectl apply -f -
-      become_user: "{{ ansible_user }}"
-   
+#    - name: Install Linkerd
+#      ansible.builtin.shell: | 
+#        curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install-edge | sh && \
+#        export PATH=$HOME/.linkerd2/bin:$PATH && \
+#        linkerd check --pre && \
+#        linkerd install --crds | kubectl apply -f - && \
+#        linkerd install | kubectl apply -f -
+#      become_user: "{{ ansible_user }}"
+#   
 #    - name: Inject Pods Linkered
 #      ansible.builtin.command:
 #        cmd: kubectl get deploy -n  -o yaml | linkerd inject - | kubectl apply -f -
