@@ -1,0 +1,13 @@
+kubeconfig: "{{ kubedirectory }}/config"
+kubedirectory: "/home/{{ ansible_user }}/.kube"
+
+
+namespaces:
+  - ts-production
+  - ts-staging
+  - ts-development
+  - monitoring
+
+node_name:
+  - worker-node1
+ 
