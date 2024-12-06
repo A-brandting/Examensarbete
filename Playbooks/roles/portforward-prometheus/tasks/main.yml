@@ -1,0 +1,10 @@
+---
+# tasks file for portforward-prometheus
+
+# Portforward från grafana -> masternoden
+- name: Port-forward in detached mode using async
+  ansible.builtin.command:
+    cmd: screen -dmS portforward kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090:9090
+  become_user: administrator
+  async: 3600  # Time in seconds (1 hour)
+  poll: 1  # Don't wait for the command to finish
