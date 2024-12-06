@@ -1,0 +1,11 @@
+---
+# tasks file for install-helm
+
+- name: Download and install Helm
+  ansible.builtin.shell: |
+    curl -fsSL https://get.helm.sh/helm-v3.10.0-linux-amd64.tar.gz -o helm.tar.gz
+    tar -zxvf helm.tar.gz
+    sudo mv linux-amd64/helm /usr/local/bin/helm
+    rm -rf linux-amd64 helm.tar.gz
+  args:
+    creates: /usr/local/bin/helm
