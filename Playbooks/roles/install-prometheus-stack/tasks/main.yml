@@ -1,0 +1,29 @@
+---
+# tasks file for install-prometheus-stack
+
+- name: Add prometheus Helm repository
+  ansible.builtin.command:
+    cmd: "helm repo add prometheus-community https://prometheus-community.github.io/helm-charts"
+  become_user: "{{ ansible_user }}"
+
+- name: Add Grafana Helm repository
+  ansible.builtin.command:
+    cmd: "helm repo add grafana https://grafana.github.io/helm-charts" 
+  become_user: "{{ ansible_user }}"
+
+- name: Update helm repository
+  ansible.builtin.command:
+    cmd: helm repo update
+  become_user: "{{ ansible_user }}"
+
+- name: Install prometheus-community/kube-prometheus-stack
+  ansible.builtin.command: # --values /home/{{ ansible_user }}/smtp-values.yaml
+    cmd: "helm upgrade --install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --set grafana.adminPassword=Linux4Ever"      
+  become_user: "{{ ansible_user }}"
+
+# WAIT FOR SERVICES TO START UP
+- name: Install prometheus-community/kube-prometheus-stack
+  ansible.builtin.command: # --values /home/{{ ansible_user }}/smtp-values.yaml
+    cmd: "kubectl wait --for=condition=Ready pods --all -n monitoring --timeout=300s"
+  become_user: "{{ ansible_user }}"
+
