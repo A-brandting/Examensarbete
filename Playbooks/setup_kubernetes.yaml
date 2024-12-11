@@ -2,6 +2,7 @@
 # PLAY 1: ALL NODES
 - name: Setup kubernetes nodes
   hosts: cluster
+  strategy: free
   become: true
   vars_files:
     - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
@@ -35,6 +36,7 @@
 - name: Setup Kubernetes workernodes
   hosts: workernodes
   become: true
+  strategy: free
   vars_files:
     - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
     - vars/common.yaml      # Variabler som används för dynamisk playbook
