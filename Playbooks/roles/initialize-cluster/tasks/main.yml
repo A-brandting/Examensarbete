@@ -1,7 +1,7 @@
 ---
 # tasks file for initialize-cluster
 
-   # Tar ner alla images innan start av klustret
+# Tar ner alla images innan start av klustret
 - name: Pull Kubernetes images
   ansible.builtin.command:
     cmd: kubeadm config images pull
@@ -30,3 +30,5 @@
 - name: Change config permission
   ansible.builtin.shell: |
     chown {{ ansible_user }}:{{ ansible_user }} {{ kubeconfig }}
+
+

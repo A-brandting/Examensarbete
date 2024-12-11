@@ -28,27 +28,6 @@
     regexp: '^/swap.img*'
     state: absent # Ser till att raden inte existerar
 
-# Enablar IPv4 Forwarding
-#- name: Create k8s sysctl configuration file to enable IPv4 forwarding
-#  ansible.builtin.copy:
-#    dest: /etc/sysctl.d/k8s.conf
-#    content: |
-#      net.ipv4.ip_forward = 1
-#    owner: root
-#    group: root
-#    mode: '0644'
-#    force: no
-#  register: containerd_changes    
-    
-# Laddar in inställningarna
-#- name: Apply sysctl settings
-#  ansible.builtin.sysctl:
-#    name: net.ipv4.ip_forward
-#    value: '1'
-#    state: present
-#    reload: yes
-#  register: containerd_changes
-
 # Laddar till Dockers repository nyckel (Samma som för Containerd)
 - name: Add Docker GPG key for repository
   apt_key:
@@ -121,10 +100,6 @@
     value: 1
     state: present
     reload: yes
-
-#- name: Reload sysctl configuration
-#  ansible.builtin.command:
-#    cmd: sysctl --system
 
 # Skapar default configfil för Containerd (Config.toml)
 - name: Create default kubernetes config
