@@ -1,0 +1,105 @@
+---
+# PLAY 1: ALL NODES
+- name: Setup kubernetes nodes
+  hosts: cluster
+  strategy: free
+  become: true
+  vars_files:
+    - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
+    - vars/common.yaml      # Variabler som används för dynamisk playbook
+
+  vars:
+    ansible_become_pass: "{{ become_password }}"
+
+  roles:
+    - install-containerd # Installerar Containerd (Container runtime)
+    - install-kubernetes # Installerar Kubernetes (kubeadm,kubectl,kubelet)
+    - install-python3    # Installerar Python3 och Python3-pip (För att kunna köra Kubernetes-moduler till Ansible)
+
+# PLAY 2: MASTERNODES
+- name: Setup kubernetes Masternode
+  hosts: masternodes
+  become: true
+  vars_files:
+    - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
+    - vars/common.yaml      # Variabler som används för dynamisk playbook
+  vars:
+    ansible_become_pass: "{{ become_password }}"
+
+  roles:
+    - initialize-cluster            # Initialiserar klustret
+    - install-calico                # Installerar nätverksplugin (Calico) (IP-range 192.168.0.0/16)
+    - create-join-token             # Skapar jointoken för workernodes
+    - create-kubeconfig-localhost   # Skapar kubeconfig för localhost
+
+# PLAY 3: WORKERNODES
+- name: Setup Kubernetes workernodes
+  hosts: workernodes
+  become: true
+  strategy: free
+  vars_files:
+    - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
+    - vars/common.yaml      # Variabler som används för dynamisk playbook
+    
+  vars: 
+    ansible_become_pass: "{{ become_password }}"
+    
+  roles: 
+    - join-cluster # Workernodes joinar klustret
+
+
+# PLAY 4: LOCALHOST
+- name: Setup kubernetes localhost
+  hosts: localhost
+  become: true
+  vars_files:
+
+    - vault/ts-vault.yaml  # Krypterad fil som innehåller secrets
+    - vars/common.yaml     # Variabler som används för dynamisk playbook
+    
+  vars:
+    ansible_become_pass: "{{ become_password }}"
+    
+  roles:
+
+    - install-kubectl # Installerar kubectl (För att kunna styra klustret utifrån)
+    - install-python3 # Installerar Python3 och Python3-pip (För att kunna köra Kubernetes-moduler till Ansible)
+
+# PLAY 5: Configure masternodes
+- name: Configure kubernetes cluster
+  hosts: masternodes
+  become: true
+  vars_files:
+    - vault/ts-vault.yaml
+    - vars/common.yaml
+
+  vars:
+
+    ansible_become_pass: "{{ become_password }}"
+
+  roles:
+
+    - configure-namespaces      # Sätter upp namespaces från variabln namespace i common.yaml
+    - configure-node-labels     # Sätter labels på workernodes
+    - install-helm              # Installerar pakethanterare för kubernetes
+    - install-metrics-server    # Installerar metrics server för HPA 
+    - install-kured             # Installerar Kured för säkra omstarter
+    - install-prometheus-stack  # Installerar prometheus-stack för övervakning
+
+
+# PLAY 6: PORTFORWARD SERVICES
+- name: Portforward services
+  hosts: localhost
+  become: true
+  vars_files:
+
+    - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
+    - vars/common.yaml      # Variabler som används för dynamisk playbook
+    
+  vars:
+    ansible_become_pass: "{{ become_password }}"
+    
+  roles:
+    - portforward-grafana     # Portforwardar grafana localhost:3000
+    - portforward-prometheus  # Portforwardar prometheus localhost:9090
+
