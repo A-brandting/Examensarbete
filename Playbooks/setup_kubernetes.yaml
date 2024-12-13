@@ -64,7 +64,7 @@
 
     - install-kubectl # Installerar kubectl (För att kunna styra klustret utifrån)
     - install-python3 # Installerar Python3 och Python3-pip (För att kunna köra Kubernetes-moduler till Ansible)
-
+    - install-screen  # Installerar screen för att kunna köra portforward detatched
 # PLAY 5: Configure masternodes
 - name: Configure kubernetes cluster
   hosts: masternodes
