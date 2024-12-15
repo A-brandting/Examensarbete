@@ -1,7 +1,5 @@
 ---
 # tasks file for install-screen
-
-
 - name: Install screen
   apt:
     name: screen
