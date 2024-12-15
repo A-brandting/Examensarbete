@@ -12,6 +12,8 @@
 │   │   │       └── load-test-webserver-01.sh
 │   │   ├── production
 │   │   └── staging
+│   ├── main
+│   │   └── update_servers.yaml
 │   ├── roles
 │   │   ├── configure-namespaces
 │   │   │   ├── defaults
@@ -251,6 +253,23 @@
 │   │   │   │   └── test.yml
 │   │   │   └── vars
 │   │   │       └── main.yml
+│   │   ├── install-screen
+│   │   │   ├── defaults
+│   │   │   │   └── main.yml
+│   │   │   ├── files
+│   │   │   ├── handlers
+│   │   │   │   └── main.yml
+│   │   │   ├── meta
+│   │   │   │   └── main.yml
+│   │   │   ├── README.md
+│   │   │   ├── tasks
+│   │   │   │   └── main.yml
+│   │   │   ├── templates
+│   │   │   ├── tests
+│   │   │   │   ├── inventory
+│   │   │   │   └── test.yml
+│   │   │   └── vars
+│   │   │       └── main.yml
 │   │   ├── join-cluster
 │   │   │   ├── defaults
 │   │   │   │   └── main.yml
@@ -328,5 +347,6 @@
 │   ├── vars
 │   │   └── common.yaml
 │   └── vault
-│       └── ts-vault.yaml
-└── README.md
+│       ├── ts-vault.yaml
+│       └── vault_password.txt
+└── README
