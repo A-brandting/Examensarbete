@@ -2,7 +2,7 @@
 # PLAY 1: ALL NODES
 - name: Setup kubernetes nodes
   hosts: cluster
-  strategy: free
+
   become: true
   vars_files:
     - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
@@ -36,15 +36,17 @@
 - name: Setup Kubernetes workernodes
   hosts: workernodes
   become: true
-  strategy: free
+
   vars_files:
     - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
     - vars/common.yaml      # Variabler som används för dynamisk playbook
-    
-  vars: 
+
+  vars:
+
     ansible_become_pass: "{{ become_password }}"
-    
-  roles: 
+
+  roles:
+
     - join-cluster # Workernodes joinar klustret
 
 
@@ -56,15 +58,16 @@
 
     - vault/ts-vault.yaml  # Krypterad fil som innehåller secrets
     - vars/common.yaml     # Variabler som används för dynamisk playbook
-    
+
   vars:
     ansible_become_pass: "{{ become_password }}"
-    
+
   roles:
 
     - install-kubectl # Installerar kubectl (För att kunna styra klustret utifrån)
     - install-python3 # Installerar Python3 och Python3-pip (För att kunna köra Kubernetes-moduler till Ansible)
     - install-screen  # Installerar screen för att kunna köra portforward detatched
+
 # PLAY 5: Configure masternodes
 - name: Configure kubernetes cluster
   hosts: masternodes
@@ -82,10 +85,9 @@
     - configure-namespaces      # Sätter upp namespaces från variabln namespace i common.yaml
     - configure-node-labels     # Sätter labels på workernodes
     - install-helm              # Installerar pakethanterare för kubernetes
-    - install-metrics-server    # Installerar metrics server för HPA 
+    - install-metrics-server    # Installerar metrics server för HPA
     - install-kured             # Installerar Kured för säkra omstarter
     - install-prometheus-stack  # Installerar prometheus-stack för övervakning
-
 
 # PLAY 6: PORTFORWARD SERVICES
 - name: Portforward services
@@ -95,11 +97,8 @@
 
     - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
     - vars/common.yaml      # Variabler som används för dynamisk playbook
-    
   vars:
     ansible_become_pass: "{{ become_password }}"
-    
   roles:
     - portforward-grafana     # Portforwardar grafana localhost:3000
     - portforward-prometheus  # Portforwardar prometheus localhost:9090
-
