@@ -25,7 +25,7 @@
     create_namespace: true
     values:
       grafana:
-        adminPassword: "Linux4Ever"
+        adminPassword: "{{ grafana_password }}"
     state: present
   become: false
   register: prometheus_stack
