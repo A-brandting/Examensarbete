@@ -1,2 +1,2 @@
 sudo apt-get install apache2-utils
-ab -n 15000 -c 250 http://localhost:8080/
+ab -n 30000 -c 1000 http://localhost:8080/

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: ts-webserver-01
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: ts-webserver-01
@@ -42,12 +42,12 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: ts-webserver-01
-  minReplicas: 1
-  maxReplicas: 5
+  minReplicas: 3
+  maxReplicas: 10
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 50
+          averageUtilization: 10
