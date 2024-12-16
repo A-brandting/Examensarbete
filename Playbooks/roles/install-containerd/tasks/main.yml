@@ -16,10 +16,19 @@
     state: present
     update_cache: true
 
-# Stänger av swapoff
-- name: Disable swapoff
+# Kontrollerar om swap är enabled
+- name: Check if swap is enabled
+  ansible.builtin.command:
+    cmd: "swapon -s"
+  register: swap_status
+  changed_when: false  # Se till att det inte räknas som en förändring om swap är avstängt
+  ignore_errors: true  # Ignore error if swap is off (i.e., no output from swapon -s)
+
+# Disablar swap om det är aktiverat
+- name: Disable swap if it is active
   ansible.builtin.command:
     cmd: "swapoff -a"
+  when: swap_status.stdout != ""  # Only run swapoff if swap is enabled (i.e., swapon -s shows output)
 
 # Tar bort swapoff från FSTAB
 - name: Comment out swap entry in /etc/fstab to disable swap
