@@ -1,7 +1,16 @@
 ---
 # tasks file for install-kured
+- name: Check if Kured DaemonSet exists
+  kubernetes.core.k8s_info:
+    kind: DaemonSet
+    name: kured
+    namespace: kube-system
+  become: false
+  register: kured_info
+  failed_when: false
 
 - name: Install Kured
   ansible.builtin.shell: |
     latest=$(curl -s https://api.github.com/repos/kubereboot/kured/releases | jq -r '.[0].tag_name') && kubectl apply -f "https://github.com/kubereboot/kured/releases/download/$latest/kured-$latest-dockerhub.yaml"
   become: false
+  when: kured_info.resources | default([]) | length == 0  # Kör bara om Kured inte redan finns

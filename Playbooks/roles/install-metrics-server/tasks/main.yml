@@ -1,29 +1,41 @@
 ---
 # tasks file for install-metrics-server
 
+- name: Check if metrics-server Deployment exists
+  kubernetes.core.k8s_info:
+    kind: Deployment
+    name: metrics-server
+    namespace: kube-system
+  become: false
+  register: metrics_server_info
+  failed_when: false
+
 
 # Installerar Metrics server
 - name: Install Metrics server
   ansible.builtin.command:
     cmd: kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
   become: false
+  when: metrics_server_info.resources | default([]) | length == 0  # Kör bara om Kured inte redan finns
 
-# Skapar yaml fil för metrics server 
+# Skapar yaml fil för metrics server
 - name: Create Metrics server yaml
   ansible.builtin.shell: |
     kubectl get deployment metrics-server -n kube-system -o yaml > metrics-server.yaml
   become: false
+  when: metrics_server_info.resources | default([]) | length == 0  # Kör bara om Kured inte redan finns
 
 - name: Ensure --cert-dir=/tmp is in metrics-server args
   ansible.builtin.lineinfile:
     path: metrics-server.yaml
     regexp: '^\s*- --cert-dir=/tmp'  # Kontrollera om '--cert-dir=/tmp' redan finns
-    line: |  
-              - --cert-dir=/tmp   
+    line: |
+              - --cert-dir=/tmp
                       - --kubelet-insecure-tls
     insertafter: '^\s*args:'  # Infoga efter args: om den inte finns
     state: present
   become: false
+  when: metrics_server_info.resources | default([]) | length == 0  # Kör bara om Kured inte redan finns
 
 # Lägger till en extra rad
 - name: Add --kubelet-insecure-tls to metrics-server args
@@ -34,8 +46,9 @@
     insertafter: '^\s*- --cert-dir=/tmp'  # Infoga efter raden '--cert-dir=/tmp'
     state: present
   become: false
-    
-# Använder denna rad för att rädda upp indenteringen 
+  when: metrics_server_info.resources | default([]) | length == 0  # Kör bara om Kured inte redan finns
+
+# Använder denna rad för att rädda upp indenteringen
 - name: Add --kubelet-insecure-tls to metrics-server args
   ansible.builtin.lineinfile:
     path: metrics-server.yaml
@@ -43,8 +56,10 @@
     line: '        - --cert-dir=/tmp'  # Lägg till ett nytt argument
     state: present
   become: false
+  when: metrics_server_info.resources | default([]) | length == 0  # Kör bara om Kured inte redan finns
 
 # Metrics server för att tillåta autoscaling (Horizontal Pod Autoscaling)
 - name: Apply metrics-server.yaml
   ansible.builtin.shell: kubectl apply -f metrics-server.yaml
   become: false
+  when: metrics_server_info.resources | default([]) | length == 0  # Kör bara om Kured inte redan finns

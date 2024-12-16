@@ -16,7 +16,7 @@
 # Portforward från grafana -> masternoden
 - name: Port-forward in detached mode using async
   ansible.builtin.command:
-    cmd: screen -dmS portforward kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring
+    cmd: screen -dmS grafana kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring
   become: false
   async: 3600
   poll: 1

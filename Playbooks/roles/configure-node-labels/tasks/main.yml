@@ -1,7 +1,21 @@
 ---
 # tasks file for configure-node-labels
-- name: Label a Kubernetes node
-  ansible.builtin.command:
-    cmd: kubectl label nodes {{ item }} node-role.kubernetes.io/worker= --kubeconfig=/{{ kubeconfig }}
+# - name: Label a Kubernetes node
+#  ansible.builtin.command:
+#    cmd: kubectl label nodes {{ item }} node-role.kubernetes.io/worker= --kubeconfig=/{{ kubeconfig }}
+#  loop: "{{ groups['workernodes'] }}"
+#  ignore_errors: true  # Ignorera fel om noden inte är online
+
+- name: Label Kubernetes worker node
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    state: "present"
+    definition:
+      apiVersion: "v1"
+      kind: "Node"
+      metadata:
+        name: "{{ item }}"
+        labels:
+          node-role.kubernetes.io/worker: ""
   loop: "{{ groups['workernodes'] }}"
-  ignore_errors: true  # Ignorera fel om noden inte är online
+

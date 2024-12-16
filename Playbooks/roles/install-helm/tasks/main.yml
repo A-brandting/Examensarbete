@@ -6,6 +6,7 @@
     url: https://get.helm.sh/helm-v3.10.0-linux-amd64.tar.gz
     dest: /tmp/helm.tar.gz
     mode: '0644'
+    force: false
 
 - name: Extract Helm tarball
   ansible.builtin.unarchive:
@@ -13,18 +14,10 @@
     dest: /tmp/
     remote_src: true
 
-- name: Move Helm binary to /usr/local/bin
-  ansible.builtin.command:
-    cmd: mv /tmp/linux-amd64/helm /usr/local/bin/helm
-  args:
-    creates: /usr/local/bin/helm
-
-- name: Clean up temporary files
-  ansible.builtin.file:
-    path: /tmp/helm.tar.gz
-    state: absent
-
-- name: Remove extracted folder
-  ansible.builtin.file:
-    path: /tmp/linux-amd64
-    state: absent
+- name: Copy Helm binary to /usr/local/bin
+  ansible.builtin.copy:
+    src: /tmp/linux-amd64/helm
+    dest: /usr/local/bin/helm
+    mode: '0755'
+    remote_src: true
+  become: true

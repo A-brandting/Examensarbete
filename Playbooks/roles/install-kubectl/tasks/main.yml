@@ -16,20 +16,18 @@
     update_cache: true
 
 # Lägger till nyckel för Kubernetes repository
-- name: Download the Kubernetes GPG signing key
-  ansible.builtin.shell: "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
-  args:
-    creates: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+- name: Add Kubernetes repository key
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    mode: '0644'
+    force: true
 
-  # Lägger till Kubernetes repository
-- name: Add the Kubernetes repository
-  ansible.builtin.shell: "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list"
-  args:
-    creates: /etc/apt/sources.list.d/kubernetes.list
-
-# Uppdaterar cachen efter tillägg av repository
-- name: Update apt package index
-  ansible.builtin.apt:
+# Lägger till Kubernetes repository
+- name: Add Kubernetes repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /"
+    state: present
     update_cache: true
 
 # Installerar verktyg för Kubernetes
@@ -39,7 +37,7 @@
       - kubectl
     state: present
 
-    # Ser till att /.kube foldern existerar på localhost
+# Ser till att /.kube foldern existerar på localhost
 - name: Create kube directory
   ansible.builtin.file:
     path: /home/administrator/.kube/
