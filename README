@@ -1,3 +1,4 @@
+├── install-req.sh
 ├── Playbooks
 │   ├── inventory
 │   │   └── inventory.ini
@@ -12,8 +13,6 @@
 │   │   │       └── load-test-webserver-01.sh
 │   │   ├── production
 │   │   └── staging
-│   ├── main
-│   │   └── update_servers.yaml
 │   ├── roles
 │   │   ├── configure-namespaces
 │   │   │   ├── defaults
@@ -121,6 +120,7 @@
 │   │   │   ├── defaults
 │   │   │   │   └── main.yml
 │   │   │   ├── files
+│   │   │   │   └── config.toml
 │   │   │   ├── handlers
 │   │   │   │   └── main.yml
 │   │   │   ├── meta
@@ -331,7 +331,6 @@
 │   │       │   └── main.yml
 │   │       ├── README.md
 │   │       ├── tasks
-│   │       │   ├── main
 │   │       │   └── main.yml
 │   │       ├── templates
 │   │       ├── tests
@@ -340,6 +339,7 @@
 │   │       └── vars
 │   │           └── main.yml
 │   ├── scripts
+│   │   ├── ssh-gen.sh
 │   │   ├── start.sh
 │   │   └── update.sh
 │   ├── setup_kubernetes.yaml
@@ -347,6 +347,7 @@
 │   ├── vars
 │   │   └── common.yaml
 │   └── vault
-│       ├── ts-vault.yaml
-│       └── vault_password.txt
+│       └── ts-vault.yaml
 └── README
+
+184 directories, 167 files
