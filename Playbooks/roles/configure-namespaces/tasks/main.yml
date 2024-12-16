@@ -5,6 +5,6 @@
 - name: Create namespaces
   kubernetes.core.k8s:
     kind: Namespace
-    name: "{{ item }}" 
+    name: "{{ item }}"
     kubeconfig: "{{ kubeconfig }}" # /home/administrator/.kube/config i mitt fall
   loop: "{{ namespaces }}" # Definiera namespaces i common.yaml

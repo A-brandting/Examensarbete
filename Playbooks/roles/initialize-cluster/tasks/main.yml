@@ -1,11 +1,6 @@
 ---
 # tasks file for initialize-cluster
 
-# Tar ner alla images innan start av klustret
-- name: Pull Kubernetes images
-  ansible.builtin.command:
-    cmd: kubeadm config images pull
-
 # Initierar klustret med IP-range för att match med Calico:s nätverksplugin
 - name: Initialize cluster
   ansible.builtin.command:
@@ -14,21 +9,25 @@
   args:
     creates: /etc/kubernetes/kubelet.conf
 
-# Skapar Kube directory för användaren
-- name: Create Kube directory
-  ansible.builtin.command:
-    cmd: mkdir -p {{ kubedirectory }}
-    
+- name: Create Kube directory recursively
+  ansible.builtin.file:
+    path: "{{ kubedirectory }}"
+    state: directory
+    mode: '0755'
+    # recurse: true # Tillåter rekursiv skapande av mappar
+    force: false
+
 # Kopierar över kubelet config från admin.conf
 - name: Copy config to kube directory
   ansible.builtin.command:
     cmd: cp -i /etc/kubernetes/admin.conf {{ kubeconfig }}
   args:
     creates: "{{ kubeconfig }}"
-    
+
 # Ändrar rättigheter för configfilen (Gör den åtkomlig för användarkontot)
-- name: Change config permission
-  ansible.builtin.shell: |
-    chown {{ ansible_user }}:{{ ansible_user }} {{ kubeconfig }}
-
-
+- name: Change config ownership
+  ansible.builtin.file:
+    path: "{{ kubeconfig }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0600'  # Säkerställ att endast användaren kan läsa och skriva filen

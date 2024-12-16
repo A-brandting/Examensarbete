@@ -8,10 +8,10 @@
   register: join_token
   args:
     creates: join_token
-    
-    # Sparar join token temporärt på Ansiblenoden
+# Sparar join token temporärt på Ansiblenoden
 - name: Save generated token
   ansible.builtin.copy:
     content: "{{ join_token.stdout }}"
     dest: /tmp/join_token
-  delegate_to: localhost
+    mode: '0644'
+  delegate_to: localhost # noqa: ANSIBLE0010

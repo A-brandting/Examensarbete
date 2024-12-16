@@ -7,10 +7,11 @@
     src: /tmp/join_token
     dest: /tmp/join_token.sh
     mode: '0755'
-    
+    force: false
+
 # Ansluter workernodsen till klustret
 - name: Join workers to cluster
-  ansible.builtin.shell:
-    cmd: /tmp/join_token.sh
+  ansible.builtin.command:
+    cmd: "bash /tmp/join_token.sh"
   args:
     creates: /etc/kubernetes/kubelet.conf

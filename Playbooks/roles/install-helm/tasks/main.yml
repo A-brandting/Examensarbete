@@ -1,11 +1,30 @@
 ---
 # tasks file for install-helm
 
-- name: Download and install Helm
-  ansible.builtin.shell: |
-    curl -fsSL https://get.helm.sh/helm-v3.10.0-linux-amd64.tar.gz -o helm.tar.gz
-    tar -zxvf helm.tar.gz
-    sudo mv linux-amd64/helm /usr/local/bin/helm
-    rm -rf linux-amd64 helm.tar.gz
+- name: Download Helm tarball
+  ansible.builtin.get_url:
+    url: https://get.helm.sh/helm-v3.10.0-linux-amd64.tar.gz
+    dest: /tmp/helm.tar.gz
+    mode: '0644'
+
+- name: Extract Helm tarball
+  ansible.builtin.unarchive:
+    src: /tmp/helm.tar.gz
+    dest: /tmp/
+    remote_src: true
+
+- name: Move Helm binary to /usr/local/bin
+  ansible.builtin.command:
+    cmd: mv /tmp/linux-amd64/helm /usr/local/bin/helm
   args:
     creates: /usr/local/bin/helm
+
+- name: Clean up temporary files
+  ansible.builtin.file:
+    path: /tmp/helm.tar.gz
+    state: absent
+
+- name: Remove extracted folder
+  ansible.builtin.file:
+    path: /tmp/linux-amd64
+    state: absent

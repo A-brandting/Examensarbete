@@ -3,20 +3,20 @@
 
 # Tar fram poddnamnet för Grafana
 - name: Get the Grafana pod name
-  command: kubectl get pods -n monitoring -l app.kubernetes.io/name=grafana -o jsonpath='{.items[0].metadata.name}'
+  ansible.builtin.command: kubectl get pods -n monitoring -l app.kubernetes.io/name=grafana -o jsonpath='{.items[0].metadata.name}'
   register: grafana_pod_name
-  become_user: administrator  
+  become: false
 
 # Väntar på att grafana ska starta
 - name: Wait for grafana to start
   ansible.builtin.shell: |
     kubectl wait --for=condition=ready pod -n monitoring {{ grafana_pod_name.stdout }}
-  become_user: administrator
+  become: false
 
 # Portforward från grafana -> masternoden
 - name: Port-forward in detached mode using async
   ansible.builtin.command:
     cmd: screen -dmS portforward kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring
-  become_user: administrator
+  become: false
   async: 3600
-  poll: 1  
+  poll: 1

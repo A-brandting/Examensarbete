@@ -2,19 +2,17 @@
 # tasks file for install-metrics-server
 
 
-#helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
-
+# Installerar Metrics server
 - name: Install Metrics server
   ansible.builtin.command:
     cmd: kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-  become_user: "{{ ansible_user }}"
+  become: false
 
-    # Installera Metrics Server
-- name: Install Metrics server
+# Skapar yaml fil för metrics server 
+- name: Create Metrics server yaml
   ansible.builtin.shell: |
     kubectl get deployment metrics-server -n kube-system -o yaml > metrics-server.yaml
-  become_user: "{{ ansible_user }}"
-
+  become: false
 
 - name: Ensure --cert-dir=/tmp is in metrics-server args
   ansible.builtin.lineinfile:
@@ -25,7 +23,7 @@
                       - --kubelet-insecure-tls
     insertafter: '^\s*args:'  # Infoga efter args: om den inte finns
     state: present
-  become_user: "{{ ansible_user }}"
+  become: false
 
 # Lägger till en extra rad
 - name: Add --kubelet-insecure-tls to metrics-server args
@@ -35,7 +33,7 @@
     line: '        - --kubelet-insecure-tls'  # Lägg till det nya argumentet
     insertafter: '^\s*- --cert-dir=/tmp'  # Infoga efter raden '--cert-dir=/tmp'
     state: present
-  become_user: "{{ ansible_user }}"
+  become: false
     
 # Använder denna rad för att rädda upp indenteringen 
 - name: Add --kubelet-insecure-tls to metrics-server args
@@ -44,9 +42,9 @@
     regexp: '^\s*- --kubelet-insecure-tls'  # Matcha raden som börjar med ett argument i args-listan
     line: '        - --cert-dir=/tmp'  # Lägg till ett nytt argument
     state: present
-  become_user: "{{ ansible_user }}"
+  become: false
 
 # Metrics server för att tillåta autoscaling (Horizontal Pod Autoscaling)
 - name: Apply metrics-server.yaml
   ansible.builtin.shell: kubectl apply -f metrics-server.yaml
-  become_user: "{{ ansible_user }}"
+  become: false

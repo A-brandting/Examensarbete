@@ -6,4 +6,4 @@
   ansible.builtin.fetch:
     src: "/etc/kubernetes/admin.conf"
     dest: "{{ kubeconfig }}"
-    flat: yes
+    flat: true

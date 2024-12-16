@@ -1,29 +1,32 @@
 ---
 # tasks file for install-prometheus-stack
 
-- name: Add prometheus Helm repository
-  ansible.builtin.command:
-    cmd: "helm repo add prometheus-community https://prometheus-community.github.io/helm-charts"
-  become_user: "{{ ansible_user }}"
+- name: Add Prometheus Helm repository
+  kubernetes.core.helm_repository:
+    name: prometheus-community
+    repo_url: https://prometheus-community.github.io/helm-charts
+    state: present
+  become: false
+  register: prometheus_stack
 
 - name: Add Grafana Helm repository
-  ansible.builtin.command:
-    cmd: "helm repo add grafana https://grafana.github.io/helm-charts" 
-  become_user: "{{ ansible_user }}"
+  kubernetes.core.helm_repository:
+    name: grafana
+    repo_url: https://grafana.github.io/helm-charts
+    state: present
+  become: false
+  register: prometheus_stack
 
-- name: Update helm repository
-  ansible.builtin.command:
-    cmd: helm repo update
-  become_user: "{{ ansible_user }}"
-
-- name: Install prometheus-community/kube-prometheus-stack
-  ansible.builtin.command: # --values /home/{{ ansible_user }}/smtp-values.yaml
-    cmd: "helm upgrade --install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --set grafana.adminPassword=Linux4Ever"      
-  become_user: "{{ ansible_user }}"
-
-# WAIT FOR SERVICES TO START UP
-- name: Install prometheus-community/kube-prometheus-stack
-  ansible.builtin.command: # --values /home/{{ ansible_user }}/smtp-values.yaml
-    cmd: "kubectl wait --for=condition=Ready pods --all -n monitoring --timeout=300s"
-  become_user: "{{ ansible_user }}"
-
+- name: Install Prometheus kube-prometheus-stack
+  kubernetes.core.helm:
+    name: prometheus
+    chart_ref: prometheus-community/kube-prometheus-stack
+    namespace: monitoring
+    create_namespace: true
+    values:
+      grafana:
+        adminPassword: "Linux4Ever"
+    state: present
+  become: false
+  register: prometheus_stack
+  notify: Wait for monitoring pods to get ready # Notifiera handlern om förändringar sker

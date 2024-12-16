@@ -1,6 +1,6 @@
 ---
 # tasks file for install-screen
 - name: Install screen
-  apt:
+  ansible.builtin.apt:
     name: screen
     state: present
