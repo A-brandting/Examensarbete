@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Uppgraderar systemet
-sudo apt update && apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 
 # Installerar python-beroende för ansible-galaxy
 sudo apt install python3 -y
