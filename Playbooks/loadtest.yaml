@@ -1,0 +1,30 @@
+---
+
+# PLAY 1:
+- name: Load test
+  hosts: masternodes
+  become: true
+  vars_files:
+    - vault/ts-vault.yaml   # Krypterad fil som innehåller secrets
+    - vars/common.yaml
+  vars:
+    ansible_become_pass: "{{ become_password }}"
+
+  tasks:
+
+    - name: Install apache2-utils
+      ansible.builtin.apt:
+        name: apache2-utils
+        update_cache: true
+
+    - name: Copy load test to masternoden
+      ansible.builtin.copy:
+        src: scripts/apache2-utils
+        dest: apache2-utils
+        mode: '0744'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Run test
+      ansible.builtin.shell:
+        cmd: ./apache2-utils
