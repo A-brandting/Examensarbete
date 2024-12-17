@@ -1,13 +1,17 @@
 kubeconfig: "{{ kubedirectory }}/config"
 kubedirectory: "/home/{{ ansible_user }}/.kube"
 
-
 namespaces:
   - ts-production
   - ts-staging
   - ts-development
-  - monitoring
+  - monitoring 
 
-node_name:
-  - worker-node1
- 
+
+
+
+loadbalancer_ip_range: "10.0.2.100-10.0.2.150"
+webserver_name: "ts-webserver-01"
+webserver_replicas_min: 4
+webserver_replicas_max: 10
+webserver_average_utilization: 10
