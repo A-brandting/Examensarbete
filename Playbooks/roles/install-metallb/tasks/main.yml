@@ -22,20 +22,13 @@
   changed_when: true
   when: check_arp.rc != 0 # Kör endast denna rad om returncode är 0 på check arp
 
-# Kontrollerar om metallb är installerat
-- name: Check if MetalLB is installed
-  ansible.builtin.command:
-    cmd: kubectl get deployment -n metallb-system
-  register: metallb_check
-  become: false
-  changed_when: false
 
 # Installerar metalLB
 - name: Install MetalLB
   ansible.builtin.command:
     cmd: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
   become: false
-  when: metallb_check.rc != 0
+
 
 - name: Wait for metalLB to start
   ansible.builtin.shell: |
