@@ -88,7 +88,8 @@
     - install-metrics-server    # Installerar metrics server för HPA
     - install-kured             # Installerar Kured för säkra omstarter
     - install-prometheus-stack  # Installerar prometheus-stack för övervakning
-
+    - install-metallb           # Installerar loadbalancer tjänst till klustret
+    - deployment-webserver      # Deployment av webbserver-exempel
 # PLAY 6: PORTFORWARD SERVICES
 - name: Portforward services
   hosts: localhost
