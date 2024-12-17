@@ -1,0 +1,73 @@
+---
+# tasks file for install-metallb
+
+# Kontrollerar om ARP behövs ändras
+- name: Check strictARP configuration
+  ansible.builtin.shell: |
+    kubectl get configmap kube-proxy -n kube-system -o yaml | \
+    sed -e "s/strictARP: false/strictARP: true/" | \
+    kubectl diff -f - -n kube-system
+  become: false
+  failed_when: false # Ser till att tasken inte failar vid Return code 1
+  changed_when: false
+  register: check_arp
+
+# Enablar ARP (Requirement för MetalLB)
+- name: Enable strictARP configuration
+  ansible.builtin.shell: |
+    kubectl get configmap kube-proxy -n kube-system -o yaml | \
+    sed -e "s/strictARP: false/strictARP: true/" | \
+    kubectl apply -f - -n kube-system
+  become: false
+  changed_when: true
+  when: check_arp.rc != 0 # Kör endast denna rad om returncode är 0 på check arp
+
+# Kontrollerar om metallb är installerat
+- name: Check if MetalLB is installed
+  ansible.builtin.command:
+    cmd: kubectl get deployment -n metallb-system
+  register: metallb_check
+  become: false
+  changed_when: false
+
+# Installerar metalLB
+- name: Install MetalLB
+  ansible.builtin.command:
+    cmd: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
+  become: false
+  when: metallb_check.rc != 0
+
+- name: Wait for metalLB to start
+  ansible.builtin.shell: |
+    kubectl wait --namespace metallb-system \
+    --for=condition=ready pod \
+    --selector=component=controller \
+    --timeout=90s
+  changed_when: false
+  become: false
+
+# Kopierar över Jinja2-template till noden
+- name: Copy metallb.yaml to node
+  ansible.builtin.template:
+    src: files/metallb.yaml.j2
+    dest: metallb.yaml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0664'
+
+# Kollar om det är några förändringar i metallb.yaml
+- name: Check for metallb metallb changes
+  ansible.builtin.shell: |
+    kubectl diff -f metallb.yaml
+  register: diff_output
+  become: false
+  failed_when: false
+  changed_when: diff_output.stdout != ""
+
+# Lägger till förändringar om de har skett
+- name: Apply loadbalancer changes
+  ansible.builtin.command:
+    cmd: kubectl apply -f metallb.yaml
+  become: false
+  when: diff_output.stdout != ""  # Kör endast om det finns förändringar
+  changed_when: true
