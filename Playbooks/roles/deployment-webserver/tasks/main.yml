@@ -1,0 +1,15 @@
+---
+# tasks file for deployment-webserver
+- name: Create deployment file
+  ansible.builtin.template:
+    src: files/nginx-template.yaml.j2
+    dest: webserver.yaml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0664'
+
+- name: Deploy webserver
+  ansible.builtin.command:
+    cmd: kubectl apply -f webserver.yaml
+  changed_when: false
+  become: false

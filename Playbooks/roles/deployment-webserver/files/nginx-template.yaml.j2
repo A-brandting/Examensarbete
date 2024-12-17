@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ webserver_name }}"
+spec:
+  replicas: {{ webserver_replicas_min }}
+  selector:
+    matchLabels:
+      app: "{{ webserver_name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ webserver_name }}"
+    spec:
+      containers:
+        - name: "{{ webserver_name }}"
+          image: nginx:latest
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "loadbalancer-{{ webserver_name }}"
+spec:
+  type: LoadBalancer  # Skapar Loadbalancer
+  ports:
+    - port: 80        # Port 80:80   
+      targetPort: 80
+  selector:
+    app: "{{ webserver_name }}"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "{{ webserver_name }}"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: "{{ webserver_name }}"
+  minReplicas: {{ webserver_replicas_min }}
+  maxReplicas: {{ webserver_replicas_max }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ webserver_average_utilization }}
