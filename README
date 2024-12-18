@@ -4,15 +4,18 @@
 │   │   └── inventory.ini
 │   ├── k8s-environments
 │   │   ├── development
-│   │   │   ├── deployments
-│   │   │   │   └── ts-webserver-01
-│   │   │   │       └── nginx-hpa.yaml
-│   │   │   └── scripts
-│   │   │       ├── check-status.sh
-│   │   │       ├── deploy-webserver-01.sh
-│   │   │       └── load-test-webserver-01.sh
+│   │   │   └── ts-webserver-01
+│   │   │       ├── deployments
+│   │   │       │   ├── deploy-webserver.yaml
+│   │   │       │   └── loadbalancer
+│   │   │       │       ├── loadbalancer.yaml
+│   │   │       │       └── metallb.yaml
+│   │   │       └── scripts
+│   │   │           ├── check-status.sh
+│   │   │           └── deploy-webserver-01.sh
 │   │   ├── production
 │   │   └── staging
+│   ├── loadtest.yaml
 │   ├── roles
 │   │   ├── configure-namespaces
 │   │   │   ├── defaults
@@ -69,6 +72,24 @@
 │   │   │   ├── defaults
 │   │   │   │   └── main.yml
 │   │   │   ├── files
+│   │   │   ├── handlers
+│   │   │   │   └── main.yml
+│   │   │   ├── meta
+│   │   │   │   └── main.yml
+│   │   │   ├── README.md
+│   │   │   ├── tasks
+│   │   │   │   └── main.yml
+│   │   │   ├── templates
+│   │   │   ├── tests
+│   │   │   │   ├── inventory
+│   │   │   │   └── test.yml
+│   │   │   └── vars
+│   │   │       └── main.yml
+│   │   ├── deployment-webserver
+│   │   │   ├── defaults
+│   │   │   │   └── main.yml
+│   │   │   ├── files
+│   │   │   │   └── nginx-template.yaml.j2
 │   │   │   ├── handlers
 │   │   │   │   └── main.yml
 │   │   │   ├── meta
@@ -189,6 +210,25 @@
 │   │   │   ├── defaults
 │   │   │   │   └── main.yml
 │   │   │   ├── files
+│   │   │   ├── handlers
+│   │   │   │   └── main.yml
+│   │   │   ├── meta
+│   │   │   │   └── main.yml
+│   │   │   ├── README.md
+│   │   │   ├── tasks
+│   │   │   │   └── main.yml
+│   │   │   ├── templates
+│   │   │   ├── tests
+│   │   │   │   ├── inventory
+│   │   │   │   └── test.yml
+│   │   │   └── vars
+│   │   │       └── main.yml
+│   │   ├── install-metallb
+│   │   │   ├── defaults
+│   │   │   │   └── main.yml
+│   │   │   ├── files
+│   │   │   │   ├── metallb.yaml.j2
+│   │   │   │   └── nginx.yaml.j2
 │   │   │   ├── handlers
 │   │   │   │   └── main.yml
 │   │   │   ├── meta
@@ -339,9 +379,11 @@
 │   │       └── vars
 │   │           └── main.yml
 │   ├── scripts
+│   │   ├── apache2-utils.sh
 │   │   ├── ssh-gen.sh
-│   │   ├── start.sh
-│   │   └── update.sh
+│   │   ├── start_loadtest.sh
+│   │   ├── start_setup_kubernetes.sh
+│   │   └── start_update.sh
 │   ├── setup_kubernetes.yaml
 │   ├── update_servers.yaml
 │   ├── vars
@@ -349,5 +391,3 @@
 │   └── vault
 │       └── ts-vault.yaml
 └── README
-
-184 directories, 167 files
