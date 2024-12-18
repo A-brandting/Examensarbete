@@ -1,17 +1,17 @@
-kubeconfig: "{{ kubedirectory }}/config"
-kubedirectory: "/home/{{ ansible_user }}/.kube"
+kubeconfig: "{{ kubedirectory }}/config"        # RÖR EJ (FÖR ATT DYNAMISKT KUNNA SKAPA KUBECONFIG OBEROENDE AV MILJÖ)
+kubedirectory: "/home/{{ ansible_user }}/.kube" # RÖR EJ (FÖR ATT DYNAMISKT KUNNA SKAPA KUBEDIRECTORY OBEROENDE AV MILJÖ)
 
+# ANGE ALLA NAMESPACES SOM SKA SKAPAS I MILJÖN VID UPPSÄTTNING
 namespaces:
-  - ts-production
-  - ts-staging
-  - ts-development
-  - monitoring 
+  - ts-production    # NAMESPACES FÖR PRODUKTIONS-APPLIKATIONER
+  - ts-staging       # NAMESPACE FÖR STAGING-APPLIKATIONER
+  - ts-development   # NAMESPACE FÖR DEVELOPMENT-APPLIKATIONER
+  - monitoring       # ANVÄNDS AV KUBE-PROMETHEUS-STACK (DENNA SKAPAS AUTOMATISKT ÄVEN OM DEN INTE SKAPAS HÄR)
 
 
-
-
-loadbalancer_ip_range: "10.0.2.100-10.0.2.150"
-webserver_name: "ts-webserver-01"
-webserver_replicas_min: 4
-webserver_replicas_max: 10
-webserver_average_utilization: 10
+# VARIABLER FÖR WEBBSERVER KONFIGURATION
+loadbalancer_ip_range: "10.0.2.100-10.0.2.150" # ANVÄND SAMMA RANGE SOM DET LOKALA NÄTVERKET
+webserver_name: "ts-webserver-01"              # NAMN PÅ WEBBSERVERN
+webserver_replicas_min: 4                      # ANTALET REPLIKOR SOM NODEN KOMMER ATT STARTA MED
+webserver_replicas_max: 10                     # MAX ANTALET REPLIKOR VID HORIZONTAL POD AUTOSCALING
+webserver_average_utilization: 10              # HÖGSTA CPU-ANVÄNDNINGEN INNAN TJÄNSTEN SKALAS UT
