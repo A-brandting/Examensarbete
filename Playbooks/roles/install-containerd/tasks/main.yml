@@ -22,13 +22,13 @@
     cmd: "swapon -s"
   register: swap_status
   changed_when: false  # Se till att det inte räknas som en förändring om swap är avstängt
-  ignore_errors: true  # Ignore error if swap is off (i.e., no output from swapon -s)
+  ignore_errors: true  # Ignorerar error om swapped är avstängt
 
 # Disablar swap om det är aktiverat
 - name: Disable swap if it is active
   ansible.builtin.command:
     cmd: "swapoff -a"
-  when: swap_status.stdout != ""  # Only run swapoff if swap is enabled (i.e., swapon -s shows output)
+  when: swap_status.stdout != ""  # Kör bara swapoff om swapped är påslaget
 
 # Tar bort swapoff från FSTAB
 - name: Comment out swap entry in /etc/fstab to disable swap
@@ -68,15 +68,16 @@
     owner: root
     group: root
     mode: '0644'
-
+# Laddar in kernel modul Load overlay
 - name: Load overlay module
   community.general.modprobe:
     name: overlay
-
+# Laddar in kernel modul br_netfilter
 - name: Load br_netfilter module
   community.general.modprobe:
     name: br_netfilter
 
+# Nödvändiga nätverksinställningar för kubernetesuppsättning
 - name: Create /etc/sysctl.d/k8s.conf for Kubernetes settings
   ansible.builtin.copy:
     dest: /etc/sysctl.d/k8s.conf
@@ -88,13 +89,14 @@
     group: root
     mode: '0644'
 
+# Nödvändiga nätverksinställningar för kubernetesuppsättning
 - name: Apply sysctl settings
   ansible.posix.sysctl:
     name: net.bridge.bridge-nf-call-iptables
     value: 1
     state: present
     reload: true
-
+# Nödvändiga nätverksinställningar för kubernetesuppsättning
 - name: Apply sysctl settings for bridge-nf-call-ip6tables
   ansible.posix.sysctl:
     name: net.bridge.bridge-nf-call-ip6tables
@@ -102,6 +104,7 @@
     state: present
     reload: true
 
+# Nödvändiga nätverksinställningar för kubernetesuppsättning
 - name: Apply sysctl settings for ip_forward
   ansible.posix.sysctl:
     name: net.ipv4.ip_forward
@@ -109,12 +112,12 @@
     state: present
     reload: true
 
-# Copy the containerd config file to the target node
+# Kopierar containerd configfil till katalog
 - name: Create config.toml from template
   ansible.builtin.copy:
-    src: config.toml
+    src: config.toml # install-containerd/roles/files/config.toml
     dest: /etc/containerd/config.toml
     mode: '0644'
   become: true
   notify:
-    - Restart containerd service
+    - Restart containerd service # Anropar handler som startar om containerd om configen har ändrats
