@@ -19,12 +19,12 @@
 
     - name: Copy load test to masternoden
       ansible.builtin.copy:
-        src: scripts/apache2-utils
-        dest: apache2-utils
+        src: scripts/apache2-utils.sh
+        dest: apache2-utils.sh
         mode: '0744'
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
 
     - name: Run test
       ansible.builtin.shell:
-        cmd: ./apache2-utils
+        cmd: ./apache2-utils.sh
